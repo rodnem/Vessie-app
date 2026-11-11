@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Suivi vessie">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Suivi vessie</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--ink:#14181f;--mute:#6b7380;--track:#e6eaf1;--blue:#DBAE32;--amber:#C9871A;--c1:#F2E151;--c2:#DBAE32;--c3:#C9871A;--green:#2f9e57;--red:#d9503f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0c0f;--card:#17181d;--ink:#f1f2f6;--mute:#8d93a0;--track:#2a2b35;--blue:#DBAE32;--amber:#C9871A;--green:#5dbb7a;--red:#ec6a58}}
+:root[data-theme="dark"]{--bg:#0b0c0f;--card:#17181d;--ink:#f1f2f6;--mute:#8d93a0;--track:#2a2b35;--blue:#DBAE32;--amber:#C9871A;--green:#5dbb7a;--red:#ec6a58}
+*,*::before,*::after{box-sizing:inherit}
+:root{--yellow:#F2E151;--orange:#ee7d35}
+.gauge{display:flex;height:16px;border-radius:9px;overflow:hidden;background:var(--track);margin-top:12px}.gauge i{display:block;height:100%}
+.fd{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:middle}
+.tag{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:9px;margin-left:6px;background:rgba(167,123,232,.22);color:#b995f2;vertical-align:middle}
+html,body{margin:0;overflow-x:hidden;background:var(--bg);color:var(--ink);font-family:Nunito,ui-rounded,"SF Pro Rounded",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+body{max-width:520px;margin:0 auto;padding:16px 16px calc(150px + var(--vb,0px))}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+h1{font-size:30px;font-weight:800;margin:0;letter-spacing:-.5px}
+h2{font-size:21px;font-weight:800;margin:26px 4px 10px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rb{width:46px;height:46px;border-radius:50%;background:var(--card);font-size:20px;font-weight:800}
+.week{display:flex;justify-content:space-between;margin:16px 0 4px}
+.wd{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 6px 8px;border-radius:16px;font-weight:700;font-size:13px;color:var(--mute)}
+.wd i{width:34px;height:34px;border-radius:50%;border:3px solid var(--track);display:grid;place-items:center;font-style:normal;font-size:14px;color:var(--ink)}
+.wd.has i{border-color:var(--blue)}
+.wd.sel{background:var(--card);color:var(--blue)}
+.ringbox{position:relative;width:250px;height:250px;margin:14px auto 6px}
+.ringbox svg{width:100%;height:100%}
+.ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.big{font-size:58px;font-weight:800;line-height:1;letter-spacing:-2px}
+.big small{font-size:24px;letter-spacing:0;margin-left:2px}
+.lab{color:var(--mute);font-weight:700;font-size:15px;margin-top:6px}
+.leg{display:flex;justify-content:center;gap:18px;font-size:13px;font-weight:700;color:var(--mute)}
+.leg b{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.card{background:var(--card);border-radius:24px;padding:16px 18px}
+.card .t{font-weight:800;font-size:15px}
+.card .n{font-size:30px;font-weight:800;letter-spacing:-1px;margin-top:6px}
+.card .n small{font-size:15px;letter-spacing:0;margin-left:2px}
+.card .s{color:var(--mute);font-size:13px;font-weight:700;margin-top:2px}
+.row{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:22px;padding:14px 18px;margin-bottom:10px;width:100%;text-align:left}
+.dot{width:38px;height:38px;border-radius:50%;background:color-mix(in srgb,var(--c1) 20%,transparent);display:grid;place-items:center;font-size:18px;flex:none}
+.row .m{flex:1;min-width:0}.row .m b{font-size:19px}.row .m div{color:var(--mute);font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .v{text-align:right;font-size:24px;font-weight:800}.row .v small{font-size:14px}
+.row .v div{font-size:14px;font-weight:700;color:var(--amber)}.row .v div.no{color:var(--mute);font-weight:600}
+.empty{text-align:center;color:var(--mute);padding:26px 10px;font-weight:600}
+.seg{display:flex;background:var(--card);border-radius:16px;padding:4px;margin:14px 0}
+.seg button{flex:1;padding:9px;border-radius:12px;font-weight:800}
+.seg button.on{background:var(--track)}
+.nav{display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:18px;margin-bottom:14px}
+.nav button{width:40px;height:40px;border-radius:50%;background:var(--card)}
+svg text{fill:var(--mute);font:700 10px Nunito,system-ui,sans-serif}
+.up{color:var(--red)}.dn{color:var(--green)}
+details{background:var(--card);border-radius:20px;padding:4px 18px;margin-bottom:10px}
+summary{font-weight:800;padding:14px 0;cursor:pointer;font-size:16px}
+details p{margin:0 0 12px;line-height:1.5;font-size:15px}
+.src{color:var(--mute);font-size:13px!important}
+.warn{background:color-mix(in srgb,var(--amber) 16%,var(--card));border-radius:20px;padding:14px 18px;font-size:14px;line-height:1.45;font-weight:600}
+textarea,input{width:100%;font:inherit;font-size:16px;font-weight:700;color:var(--ink);background:var(--bg);border:2px solid var(--track);border-radius:14px;padding:12px;margin-top:6px}
+textarea{height:110px;font-size:16px;font-weight:500}
+input[type=datetime-local]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;height:48px;text-align:left}
+input[type=datetime-local]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.pill{background:var(--track);border-radius:999px;padding:9px 15px;font-weight:800;font-size:14px}
+.pill.pri{background:var(--blue);color:#241a05}.pill.dng{color:var(--red)}
+.dd{position:relative}.menu{display:none;position:absolute;top:100%;left:0;margin-top:6px;background:var(--card);border:2px solid var(--track);border-radius:16px;padding:6px;z-index:5;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.35)}.menu.on{display:block}.menu button{display:block;width:100%;text-align:left;padding:10px 12px;font-weight:800;font-size:14px;border-radius:10px}.menu button:disabled{opacity:.45}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px) + var(--vb,0px));width:68px;height:68px;border-radius:50%;background:var(--blue);color:#241a05;font-size:38px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.35);z-index:5}
+.bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom,0px) + var(--vb,0px));width:min(488px,calc(100% - 24px));display:flex;background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(14px);border-radius:32px;padding:6px;z-index:4}
+.bar button{flex:1;padding:9px 0 7px;border-radius:26px;font-size:12px;font-weight:800;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:2px}
+.bar button span{font-size:22px}.bar button.on{color:var(--blue);background:var(--track)}
+.ov{position:fixed;inset:0 0 var(--vb,0px) 0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.sh{background:var(--card);width:100%;max-width:520px;border-radius:28px 28px 0 0;max-height:92%;display:flex;flex-direction:column;overflow:hidden}.sb{overflow-y:auto;overflow-x:hidden;padding:22px 20px 8px;flex:1;min-height:0;-webkit-overflow-scrolling:touch}.sf{flex:none;padding:10px 20px calc(14px + env(safe-area-inset-bottom,0px));border-top:2px solid var(--track)}.sf .err{min-height:0;margin:0 0 6px}.sfb{display:flex;justify-content:space-between;gap:16px}.sfb .pill{min-width:128px;text-align:center;padding:13px 20px;font-size:16px}
+.sh h3{margin:0 0 4px;font-size:22px}.sh label{display:block;font-weight:800;font-size:14px;margin-top:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.err{color:var(--red);font-weight:700;font-size:14px;min-height:20px;margin-top:8px}
+@media (prefers-reduced-motion:no-preference){.sh{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.4}}}
+.bar button span{display:flex;align-items:center;justify-content:center;height:26px}
+.navs{display:flex;align-items:center;gap:8px;flex:none}.navs .rb{width:42px;height:42px}.td{white-space:nowrap;background:var(--blue);color:#241a05;padding:10px 14px}
+.sw{position:relative;border-radius:22px;overflow:hidden;margin-bottom:10px}
+.sw .row{margin-bottom:0;position:relative;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.sw-e,.sw-d{position:absolute;inset:0;display:none;align-items:center;padding:0 24px;font-weight:800;font-size:16px}
+.sw-e{background:var(--c2);color:#241a05}.sw-d{background:var(--red);color:#fff;justify-content:flex-end}
+.sw[data-dir=r] .sw-e{display:flex}.sw[data-dir=l] .sw-d{display:flex}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px) + var(--vb,0px));background:var(--track);color:var(--ink);border-radius:999px;padding:10px 12px 10px 18px;font-weight:700;font-size:14px;align-items:center;gap:12px;z-index:8;display:none;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+#toast button{background:var(--blue);color:#241a05;border-radius:999px;padding:6px 12px;font-weight:800}
+.rb,.nav button,.fab{display:grid;place-items:center}.td{display:flex;align-items:center;gap:6px}.sw-e,.sw-d{gap:8px}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<button class="fab" id="fab" aria-label="Ajouter une miction">+</button>
+<nav class="bar" id="bar"></nav>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const D=864e5;let E=[],tab='t',day=sod(Date.now()),rg='w',off=0,flash='';
+try{E=JSON.parse(localStorage.getItem('sv1')||'[]')}catch(e){}
+let DB=null,UID=null,lastM={},syncOk=false,pend=null;
+function mkey(t){const d=new Date(t);return 'm'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function save(){try{localStorage.setItem('sv1',JSON.stringify(E))}catch(e){}clearTimeout(pend);pend=setTimeout(push,800)}
+async function push(){if(!DB||!syncOk)return;const g={};E.forEach(e=>{const k=mkey(e.t);(g[k]=g[k]||[]).push(e)});const c=DB.collection('data/users/'+UID);
+ try{for(const k of Object.keys(g)){const s=JSON.stringify(g[k]);if(lastM[k]!==s){await c.doc(k).set({list:s});lastM[k]=s}}
+ for(const k of Object.keys(lastM)){if(!g[k]){await c.doc(k).delete();delete lastM[k]}}}catch(e){}}
+function sod(t){const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()}
+function ad(t,n){const d=new Date(t);d.setDate(d.getDate()+n);return d.getTime()}
+const p2=n=>String(n).padStart(2,'0');
+const hm=t=>{const d=new Date(t);return p2(d.getHours())+':'+p2(d.getMinutes())};
+const fd=(t,o)=>new Date(t).toLocaleDateString('fr-FR',o);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+const r0=n=>n==null?'—':Math.round(n).toLocaleString('fr-FR');
+const dur=m=>m==null?'—':m>=60?Math.floor(m/60)+' h '+p2(Math.round(m%60)):Math.round(m)+' min';
+const $=s=>document.querySelector(s);
+const IC={drop:['M12 3c3.6 4.4 6 7.4 6 10.5a6 6 0 0 1-12 0C6 10.4 8.4 7.4 12 3z'],chart:['M4 4v16h16','M7 15l4-4 3 3 5-6'],book:['M12 6.5C10.5 5.4 8 5 4 5v13c4 0 6.5.4 8 1.5 1.5-1.1 4-1.5 8-1.5V5c-4 0-6.5.4-8 1.5z','M12 6.5v13'],left:['M15 5l-7 7 7 7'],right:['M9 5l7 7-7 7'],plus:['M12 5v14M5 12h14'],edit:['M4 20h4L19 9l-4-4L4 16v4z'],trash:['M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13'],cal:['M4 6h16v14H4z','M4 10h16M8 3v4M16 3v4']},FL={drop:1,book:1,edit:1};
+const ic=(n,s,z=22,c,w)=>{const f=s&&FL[n];return`<svg viewBox="0 0 24 24" width="${z}" height="${z}" aria-hidden="true" fill="${f?'currentColor':'none'}" stroke="currentColor" stroke-width="${w||(f?1.4:s?2.6:1.8)}" stroke-linecap="round" stroke-linejoin="round"${c?` style="color:${c}"`:''}>${IC[n].map((d,k)=>`<path d="${d}"${f&&n==='book'&&k?' stroke="var(--track)"':''}/>`).join('')}</svg>`};
+const DROP=z=>ic('drop',1,z,'#F2E151');
+const dd=t=>{const d=new Date(t),m=d.toLocaleDateString('fr-FR',{month:'short'});return p2(d.getDate())+' '+m.charAt(0).toUpperCase()+m.slice(1)};
+const fc=n=>n<1?'var(--track)':n<=5?'var(--green)':n<=10?'var(--yellow)':'var(--orange)';
+const bd=e=>(e.iu?`<span class='tag'>IU</span>`:'')+(e.dl?`<span class='tag'>douleur</span>`:'')+(e.br?`<span class='tag'>brûlure</span>`:'');
+function csv(t){const sep=t.split('\n')[0].includes(';')?';':',',R=[];let r=[],c='',q=false;
+ for(let i=0;i<t.length;i++){const ch=t[i];
+  if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}
+  else if(ch=='"')q=true;else if(ch==sep){r.push(c);c=''}else if(ch=='\n'){r.push(c);R.push(r);r=[];c=''}else if(ch!='\r')c+=ch}
+ if(c||r.length){r.push(c);R.push(r)}return R}
+function fromCsv(t){const R=csv(t.replace(/^\uFEFF/,'')),h=R[0].map(x=>x.trim().toLowerCase()),ix=(...k)=>h.findIndex(x=>k.includes(x));
+ const iD=ix('date'),iH=ix('heure'),iQ=ix('quantité','volume_ml'),iS=ix('sonde','residu_ml'),iN=ix('notes','note'),iI=ix('iu'),iP=ix('douleur'),iB=ix('brûlure','brulure');
+ if(iD<0||iH<0)throw 0;const num=s=>{s=(s||'').trim().replace(',','.');return s===''||isNaN(s)?null:Math.round(+s)},out=[];
+ R.slice(1).forEach((x,k)=>{const d=(x[iD]||'').trim().split('/'),hh=(x[iH]||'').trim().split(':');if(d.length<3||hh.length<2)return;
+  const ts=new Date(+d[2],+d[1]-1,+d[0],+hh[0],+hh[1]).getTime();if(isNaN(ts))return;
+  let v=num(x[iQ]),r=num(x[iS]);if(v==null&&r!=null)v=0;
+  out.push({id:'c'+k+'-'+ts,t:ts,v,r,n:(x[iN]||'').trim(),iu:x[iI]==='1'?1:0,dl:x[iP]==='1'?1:0,br:x[iB]==='1'?1:0})});
+ return out}
+function doCsv(t){const io=$('#io'),er=$('#ioerr');try{const a=fromCsv(t);if(!a.length)throw 0;if(E.length)io.value=JSON.stringify(E);E=a;save();er.textContent=a.length+' mictions importées. Ton ancienne sauvegarde est dans la zone de texte.'}catch(x){er.textContent='Fichier illisible. Colonnes attendues : Date, Heure, Quantité, Sonde, IU, Douleur, Brûlure, Notes.'}}
+function modal(h){const o=document.createElement('div');o.className='ov';o.innerHTML='<div class="sh" role="dialog"><div class="sb" style="padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))">'+h+'</div></div>';o.addEventListener('click',e=>{if(e.target===o)o.remove()});document.body.appendChild(o);return o}
+function exCsv(){return '\uFEFFdate;heure;volume_ml;residu_ml;note;iu;douleur;brulure\n'+[...E].sort((a,b)=>a.t-b.t).map(e=>[fd(e.t,{year:'numeric',month:'2-digit',day:'2-digit'}),hm(e.t),e.v==null?'':e.v,e.r==null?'':e.r,'"'+(e.n||'').replace(/"/g,'""')+'"',e.iu||'',e.dl||'',e.br||''].join(';')).join('\n')}
+function dlModal(k){const txt=k==='json'?JSON.stringify(E):exCsv(),fn='suivi-vessie-'+new Date().toISOString().slice(0,10)+'.'+k;
+ const o=modal(`<h3>Export ${k.toUpperCase()}</h3><div class="s">${E.length} mictions · ${fn}</div><div class="btns"><button class="pill pri" id="m1">Télécharger</button><button class="pill" id="m2">Copier</button><button class="pill" id="m3">Fermer</button></div><div class="err" id="me"></div>`),me=o.querySelector('#me');
+ o.querySelector('#m3').onclick=()=>o.remove();
+ o.querySelector('#m1').onclick=async()=>{try{const d=await claude.use('downloads');if(!d)throw 0;await d.save({filename:fn,data:txt});o.remove()}catch(e){me.textContent=e&&e.code==='declined'?'Téléchargement annulé.':'Téléchargement impossible ici : utilise « Copier ».'}};
+ o.querySelector('#m2').onclick=async()=>{try{await navigator.clipboard.writeText(txt);me.style.color='var(--ink)';me.textContent='Copié dans le presse-papiers.'}catch(e){me.textContent='Copie impossible.'}}}
+function parseImp(t){t=t.replace(/^\uFEFF/,'').trim();if(t[0]==='['){const a=JSON.parse(t);if(!Array.isArray(a)||a.some(x=>!(x.t>0)))throw 0;return a.map(x=>({id:x.id||Date.now()+Math.random().toString(36).slice(2,6),t:+x.t,v:x.v==null?null:+x.v,r:x.r==null?null:+x.r,n:x.n||'',iu:x.iu||0,dl:x.dl||0,br:x.br||0}))}const a=fromCsv(t);if(!a.length)throw 0;return a}
+function impText(t){let a;try{a=parseImp(t)}catch(e){const er=$('#ioerr');if(er)er.textContent='Fichier illisible : utilise un export JSON de l’app, ou un CSV avec les colonnes Date, Heure, Quantité, Sonde, Notes.';return}
+ const ok=()=>{E=a;save();flash=a.length+' mictions importées.';render()};
+ if(!E.length){ok();return}
+ const o=modal(`<h3>Remplacer les données ?</h3><div class="s">Le fichier contient ${a.length} mictions. Elles remplaceront les ${E.length} mictions actuelles, sur ton compte et sur tous tes appareils. Impossible d’annuler : exporte d’abord si tu veux garder les données actuelles.</div><div class="btns"><button class="pill dng" id="m1">Remplacer</button><button class="pill" id="m3">Annuler</button></div>`);
+ o.querySelector('#m3').onclick=()=>o.remove();o.querySelector('#m1').onclick=()=>{o.remove();ok()}}
+let PER='30';
+function pdfRange(p,d1,d2){const e=new Date();e.setHours(23,59,59,999);let a,b=e.getTime();
+ if(p==='c'){a=new Date(d1+'T00:00:00').getTime();b=new Date(d2+'T23:59:59').getTime()}
+ else if(p==='0'){a=new Date(Math.min(...E.map(x=>x.t))).setHours(0,0,0,0)}
+ else{const s=new Date(e);s.setDate(s.getDate()-(+p-1));s.setHours(0,0,0,0);a=s.getTime()}
+ return[a,b]}
+function pdfModal(){
+ const T=Date.now(),iso=t=>new Date(t-new Date(t).getTimezoneOffset()*6e4).toISOString().slice(0,10),
+ chk=(id,t)=>`<label class="pill" style="display:inline-flex;align-items:center;margin:0"><input type="checkbox" id="${id}" checked style="width:auto;margin:0 6px 0 0">${t}</label>`;
+ const o=modal(`<h3>Export PDF pour le médecin</h3><div class="s">Période du rapport</div>
+ <div class="chips">${[['7','7 jours'],['30','30 jours'],['90','3 mois'],['0','Tout'],['c','Dates']].map(([v,t])=>`<button class="pill" data-p="${v}">${t}</button>`).join('')}</div>
+ <div id="cd" style="display:none"><label>Du<input type="date" id="d1" value="${iso(T-29*864e5)}"></label><label>Au<input type="date" id="d2" value="${iso(T)}"></label></div>
+ <div class="chips" style="margin-top:14px">${chk('k1','Graphiques')}${chk('k2','Détail des enregistrements')}</div>
+ <div class="btns" style="margin-top:16px"><button class="pill pri" id="m1">Générer le PDF</button><button class="pill" id="m3">Fermer</button></div><div class="err" id="me"></div>`),q=s=>o.querySelector(s),me=q('#me');
+ const sync=()=>{q('#cd').style.display=PER==='c'?'block':'none';o.querySelectorAll('[data-p]').forEach(b=>b.classList.toggle('pri',b.dataset.p===PER))};sync();
+ o.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{PER=b.dataset.p;sync()});
+ q('#m3').onclick=()=>o.remove();
+ q('#m1').onclick=async()=>{me.style.color='';me.textContent='';
+  try{const[a,b]=pdfRange(PER,q('#d1').value,q('#d2').value);if(!(b>a))throw 'range';
+   if(!E.some(e=>e.t>=a&&e.t<=b)){me.textContent='Aucune miction sur cette période.';return}
+   me.style.color='var(--mute)';me.textContent='Création du PDF…';
+   const buf=mkPdf(a,b,q('#k1').checked,q('#k2').checked),d=await claude.use('downloads');if(!d)throw 'dl';
+   await d.save({filename:'suivi-vessie-'+iso(a)+'_'+iso(b)+'.pdf',data:buf});o.remove()}
+  catch(e){me.style.color='';me.textContent=e==='range'?'Période invalide.':e==='lib'?'Générateur de PDF indisponible : vérifie ta connexion.':e&&e.code==='declined'?'Téléchargement annulé.':'Création ou téléchargement impossible.'}}}
+function mkPdf(a,b,gr,dt){
+ const J=window.jspdf;if(!J)throw 'lib';
+ const doc=new J.jsPDF({unit:'mm',format:'a4'}),M=15,W=210,CW=W-2*M,BL=[242,225,81],AM=[201,135,26],OR=[224,130,50],VI=[150,100,210],GR=[110,110,110];
+ const fr=t=>new Date(t).toLocaleDateString('fr-FR'),iso=t=>new Date(t-new Date(t).getTimezoneOffset()*6e4).toISOString().slice(0,10);
+ const L=E.filter(e=>e.t>=a&&e.t<=b).sort((x,y)=>x.t-y.t),R=L.filter(e=>e.r!=null&&e.r<1000),PK=L.filter(e=>e.r!=null&&e.r>=1000),V=L.filter(e=>e.v!=null);
+ const avg=x=>x.length?x.reduce((s,y)=>s+y,0)/x.length:null,f=n=>n==null?'-':String(Math.round(n)),nd=Math.max(1,Math.round((b-a)/864e5));
+ const rv=R.map(e=>e.r),vv=V.map(e=>e.v),both=R.filter(e=>e.v!=null),sv=both.reduce((s,e)=>s+e.v,0),sr=both.reduce((s,e)=>s+e.r,0),big=R.filter(e=>e.r>50).length;
+ const gaps=[];for(let i=1;i<L.length;i++){const g=L[i].t-L[i-1].t;if(g<=12*36e5)gaps.push(g)}
+ const gm=avg(gaps),mm=gm==null?0:Math.round(gm/6e4),gt=gm==null?'-':Math.floor(mm/60)+' h '+String(mm%60).padStart(2,'0');
+ const dIU=new Set(L.filter(e=>e.iu).map(e=>iso(e.t))).size,night=L.filter(e=>new Date(e.t).getHours()<6).length;
+ const S=[['Mictions enregistrées',L.length+' ('+(L.length/nd).toFixed(1).replace('.',',')+' par jour)'],
+ ['Volume uriné moyen',f(avg(vv))+' ml ('+V.length+' mesurés'+(V.length?', min '+Math.min(...vv)+', max '+Math.max(...vv):'')+')'],
+ ['Résidu moyen (sonde)',f(avg(rv))+' ml ('+R.length+' mesures'+(R.length?', max '+Math.max(...rv):'')+')'],
+ ['Résidus au-delà de 50 ml',R.length?big+' sur '+R.length+' ('+Math.round(100*big/R.length)+' %)':'-'],
+ ['Taux de vidange',sv+sr?Math.round(100*sv/(sv+sr))+' % (sur '+both.length+' mictions avec les deux mesures)':'-'],
+ ['Intervalle moyen entre mictions',gt],
+ ['Mictions de nuit (0 h - 6 h)',String(night)],
+ ['Vidanges de poche (> 1 L)',PK.length+(PK.length?' (exclues des résidus)':'')],
+ ['Infection urinaire suspectée',dIU+' jour'+(dIU>1?'s':'')],
+ ['Douleur / brûlure',L.filter(e=>e.dl).length+' / '+L.filter(e=>e.br).length+' enregistrements']];
+ let y=M;
+ doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(20);doc.text('Suivi vessie - rapport',M,y+6);y+=12;
+ doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(60);
+ doc.text('Période : du '+fr(a)+' au '+fr(b)+' ('+nd+' jour'+(nd>1?'s':'')+')   -   généré le '+fr(Date.now()),M,y);y+=9;
+ S.forEach(([k,v])=>{const t=doc.splitTextToSize(v,CW-62);doc.setFont('helvetica','normal');doc.setTextColor(...GR);doc.text(k,M,y);doc.setFont('helvetica','bold');doc.setTextColor(20);doc.text(t,M+62,y);y+=Math.max(6.5,t.length*4.6+2)});
+ y+=4;
+ const need=h=>{if(y+h>282){doc.addPage();y=M}};
+ const h2=t=>{need(16);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(20);doc.text(t,M,y+5);y+=10};
+ const D=[];for(let t=a;t<=b&&D.length<400;t+=864e5)D.push(iso(t+432e5));
+ const G={};L.forEach(e=>{const k=iso(e.t);(G[k]=G[k]||[]).push(e)});
+ const DS=D.map(k=>{const l=G[k]||[];return{k,n:l.length,v:avg(l.filter(e=>e.v!=null).map(e=>e.v)),r:avg(l.filter(e=>e.r!=null&&e.r<1000).map(e=>e.r)),iu:l.some(e=>e.iu)}});
+ const px=(x0,w,i)=>x0+w*(i+.5)/DS.length;
+ const grid=(x0,y0,w,h,mx)=>{doc.setDrawColor(215);doc.setLineWidth(.2);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...GR);
+  for(let k=0;k<=4;k++){const yy=y0+h-h*k/4;doc.line(x0,yy,x0+w,yy);doc.text(String(Math.round(mx*k/4)),x0-1.5,yy+1,{align:'right'})}
+  const st=Math.max(1,Math.ceil(DS.length/8));DS.forEach((d,i)=>{if(i%st===0)doc.text(d.k.slice(8)+'/'+d.k.slice(5,7),px(x0,w,i),y0+h+4,{align:'center'})})};
+ const line=(x0,y0,w,h,mx,key,col)=>{doc.setDrawColor(...col);doc.setFillColor(...col);doc.setLineWidth(.5);let p=null;
+  DS.forEach((d,i)=>{if(d[key]==null){p=null;return}const X=px(x0,w,i),Y=y0+h-h*Math.min(d[key],mx)/mx;if(p)doc.line(p[0],p[1],X,Y);doc.circle(X,Y,.7,'F');p=[X,Y]})};
+ const leg=items=>{let x=M;doc.setFont('helvetica','normal');doc.setFontSize(8);items.forEach(([t,c])=>{doc.setFillColor(...c);doc.circle(x+1,y-1,1,'F');doc.setTextColor(60);doc.text(t,x+3,y);x+=doc.getTextWidth(t)+9});y+=6};
+ if(gr){
+  const x0=M+8,w=CW-8;
+  h2('Volume et résidu moyens par jour');need(75);
+  let h=55,mx=Math.ceil(Math.max(100,...DS.map(d=>Math.max(d.v||0,d.r||0)))*1.1/40)*40;
+  grid(x0,y,w,h,mx);
+  doc.setDrawColor(...OR);doc.setLineWidth(.3);doc.setLineDashPattern([1.5,1.5],0);const ry=y+h-h*50/mx;doc.line(x0,ry,x0+w,ry);doc.setLineDashPattern([],0);
+  line(x0,y,w,h,mx,'v',BL);line(x0,y,w,h,mx,'r',AM);
+  DS.forEach((d,i)=>{if(d.iu){doc.setFillColor(...VI);doc.circle(px(x0,w,i),y+1.5,1,'F')}});
+  y+=h+11;leg([['Volume uriné moyen',BL],['Résidu moyen (sonde)',AM],['Repère 50 ml (indicatif)',OR],['Infection suspectée',VI]]);
+  doc.setFontSize(7.5);doc.setTextColor(...GR);doc.text('Les jours sans mesure restent vides. Les vidanges de poche (1 L et plus) ne sont pas comptées dans les résidus.',M,y);y+=9;
+  h2('Mictions par jour');need(60);
+  h=42;mx=Math.ceil(Math.max(4,...DS.map(d=>d.n))/4)*4;const bw=Math.max(.3,w/DS.length*.7);
+  grid(x0,y,w,h,mx);doc.setFillColor(...BL);
+  DS.forEach((d,i)=>{if(d.n){const bh=h*d.n/mx;doc.rect(px(x0,w,i)-bw/2,y+h-bh,bw,bh,'F')}});
+  y+=h+12}
+ const K=L.filter(e=>e.n&&/bactrim|antibio|hôpital|hopital|urgence|sos|médecin|medecin|fièvre|fievre|sang|caillot|urologue|sonde/i.test(e.n)).slice(0,40);
+ if(K.length){h2('Notes marquantes');doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(30);
+  K.forEach(e=>{const t=doc.splitTextToSize(fr(e.t)+' '+hm(e.t)+'  -  '+e.n,CW);need(t.length*4+2);doc.text(t,M,y+3);y+=t.length*4+1.5})}
+ if(dt){doc.addPage();y=M;h2('Détail des enregistrements ('+L.length+')');
+  const cx=[M,M+24,M+38,M+58,M+80,M+88,M+96],head=()=>{doc.setFillColor(238,238,238);doc.rect(M,y,CW,6,'F');doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(30);
+   ['Date','Heure','Miction ml','Résidu ml','IU','Dl','Br'].forEach((t,i)=>doc.text(t,cx[i],y+4));doc.text('Notes',M+104,y+4);y+=7;doc.setFont('helvetica','normal')};
+  head();
+  L.forEach(e=>{const nt=doc.splitTextToSize(e.n||'',CW-104),rh=Math.max(5,nt.length*3.8+1.2);if(y+rh>285){doc.addPage();y=M;head()}
+   doc.setTextColor(30);doc.setFontSize(8);[fr(e.t),hm(e.t),e.v==null?'':e.v,e.r==null?'':e.r,e.iu?'x':'',e.dl?'x':'',e.br?'x':''].forEach((t,i)=>doc.text(String(t),cx[i],y+3.6));
+   doc.text(nt,M+104,y+3.6);doc.setDrawColor(235);doc.setLineWidth(.2);doc.line(M,y+rh,M+CW,y+rh);y+=rh})}
+ const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...GR);
+  doc.text('Suivi vessie - saisies personnelles, ne remplace pas un avis médical',M,292);doc.text(i+' / '+n,W-M,292,{align:'right'})}
+ return doc.output('arraybuffer')}
+document.addEventListener('change',ev=>{if(ev.target.id!=='fi')return;const f=ev.target.files[0];ev.target.value='';if(!f)return;const rd=new FileReader();rd.onload=()=>impText(String(rd.result));rd.readAsText(f)});
+function mchart(l){const a=[...l].sort((x,y)=>x.t-y.t);if(!a.length)return`<div class='empty' style='padding:16px 0 4px'>Ajoute une miction pour voir le graphique.</div>`;
+ const W=340,H=118,L=28,B=17,T=6,R=4,n=a.length,mx=Math.max(100,...a.map(e=>Math.max(e.v||0,e.r||0)))*1.1,y=v=>T+(H-T-B)*(1-v/mx),sw=(W-L-R)/n,bw=Math.min(18,sw/2.4);
+ let g='';for(let k=0;k<=2;k++){const v=mx*k/2;g+=`<line x1='${L}' x2='${W-R}' y1='${y(v)}' y2='${y(v)}' stroke='var(--track)'/><text x='${L-5}' y='${y(v)+3}' text-anchor='end'>${Math.round(v)}</text>`}
+ const bar=(x,v,c)=>`<rect x='${x}' y='${y(v)}' width='${bw}' height='${y(0)-y(v)}' rx='3' fill='${c}'/>`;
+ const bs=a.map((e,i)=>{const cx=L+sw*(i+.5);let s='';
+  if(e.v!=null)s+=bar(cx-bw-1,e.v,'var(--c1)');
+  if(e.r!=null)s+=bar(cx+1,e.r,'var(--c3)');
+  if(e.v==null&&e.r==null)s+=`<rect x='${cx-bw}' y='${y(0)-14}' width='${bw*2}' height='14' rx='3' fill='none' stroke='var(--mute)' stroke-dasharray='3 3'/>`;
+  if(e.iu)s+=`<circle cx='${cx}' cy='${T+3}' r='3' fill='#b995f2'/>`;return s+(n<=10||i%2==0?`<text x='${cx}' y='${H-4}' text-anchor='middle'>${hm(e.t)}</text>`:'')}).join('');
+ return`<svg viewBox='0 0 ${W} ${H}' width='100%' style='display:block;margin-top:14px' role='img' aria-label='Volume uriné et résidu de chaque miction'>${g}${bs}<line x1='${L}' x2='${W-R}' y1='${y(50)}' y2='${y(50)}' stroke='var(--mute)' stroke-width='1' stroke-dasharray='5 4'/><text x='${W-R}' y='${y(50)-3}' text-anchor='end'>50 ml</text></svg><div class='s' style='font-size:11px;margin-top:4px'>Pointillés : non mesuré · point violet : infection urinaire · repère 50 ml indicatif</div>`}
+function extra(P,s){const ls=inR(P.a,P.b).sort((x,y)=>x.t-y.t);if(!ls.length)return'';
+ const ds=t=>new Set(ls.filter(e=>!t||(e.t>=t[0]&&e.t<t[1])).map(e=>sod(e.t))).size||1;
+ const W=340,H=120,L=8,B=20,n=P.it.length,sw=(W-L*2)/n,bw=Math.min(22,sw*.7),ch=H-B-6;
+ const c=P.it.map(q=>{const k=ls.filter(e=>e.t>=q[0]&&e.t<q[1]);return k.length?k.length/ds(q):0}),mx=Math.max(10,...c)*1.1;
+ const fb=c.map((v,i)=>`<rect x='${L+sw*i+(sw-bw)/2}' y='${H-B-ch*v/mx}' width='${bw}' height='${ch*v/mx}' rx='3' fill='${fc(Math.round(v))}'/>`+(P.it[i][2]?`<text x='${L+sw*(i+.5)}' y='${H-5}' text-anchor='middle'>${P.it[i][2]}</text>`:'')).join('');
+ const h=Array(24).fill(0);ls.forEach(e=>h[new Date(e.t).getHours()]++);const hx=Math.max(...h),pk=h.indexOf(hx),cw=(W-2*L)/24;
+ const hb=h.map((v,i)=>{const bh=hx?70*v/hx:0;return`<rect x='${L+i*cw+1}' y='${78-bh}' width='${cw-2}' height='${bh}' rx='2' fill='${i===pk?'var(--blue)':'var(--track)'}'/>`+(i%6==0?`<text x='${L+i*cw}' y='94'>${p2(i)}h</text>`:'')}).join('');
+ const sm=(a,b)=>h.slice(a,b).reduce((x,y)=>x+y,0),tot=h.reduce((x,y)=>x+y,0)||1,pt=[['Matin (6-12h)',6,12],['Après-midi (12-18h)',12,18],['Soir (18-24h)',18,24],['Nuit (0-6h)',0,6]].map(([t,a,b])=>`<div class='s'><b style='font-size:20px;color:var(--ink)'>${Math.round(100*sm(a,b)/tot)}%</b> : ${sm(a,b)} ${t}</div>`).join('');
+ const g=[];for(let i=1;i<ls.length;i++)g.push((ls[i].t-ls[i-1].t)/6e4);
+ const ov=s.np?Math.round(100*ls.filter(e=>e.r>50).length/s.np)+' %':'—',cd=(t,v,x)=>`<div class='card'><div class='t'>${t}</div><div class='n' style='font-size:26px'>${v}</div><div class='s'>${x}</div></div>`;
+ return`<h2>Fréquence</h2><div class='card'><svg viewBox='0 0 ${W} ${H}' width='100%' role='img' aria-label='Mictions par jour'>${fb}</svg><div class='s'>Moyenne : ${(ls.length/ds()).toFixed(1).replace('.',',')} par jour avec saisie. Vert : 1 à 5, jaune : 6 à 10, orange : plus de 10.</div></div><h2>Heures de la journée</h2><div class='card'><svg viewBox='0 0 ${W} 100' width='100%' role='img' aria-label='Mictions par heure'>${hb}</svg><div class='leg' style='justify-content:flex-start;margin-top:6px'><span><b style='background:var(--blue)'></b>Heure de pointe : ${p2(pk)} h (${h[pk]} mictions)</span></div><div class='grid' style='margin-top:10px'>${pt}</div></div><div class='grid'>${cd('Intervalle moyen',dur(avg(g)),'entre mictions')}${cd('Plus court',dur(g.length?Math.min(...g):null),'intervalle')}${cd('Plus long',dur(g.length?Math.max(...g):null),'intervalle')}${cd('Résidu au-delà de 50 ml',ov,'des mesures sonde')}${cd('Infection urinaire',ls.filter(e=>e.iu).length,'mictions marquées')}${cd('Douleur / brûlure',ls.filter(e=>e.dl).length+' / '+ls.filter(e=>e.br).length,'mictions marquées')}</div>`}
+function st(l){const p=l.filter(e=>e.r!=null&&e.v!=null),sv=p.reduce((a,e)=>a+e.v,0),sr=p.reduce((a,e)=>a+e.r,0);
+ const asc=[...l].sort((a,b)=>a.t-b.t),g=[];for(let i=1;i<asc.length;i++)g.push((asc[i].t-asc[i-1].t)/6e4);
+ return{n:l.length,np:l.filter(e=>e.r!=null).length,nv:l.filter(e=>e.v!=null).length,vol:l.reduce((a,e)=>a+(e.v||0),0),vAvg:avg(l.filter(e=>e.v!=null).map(e=>e.v)),rAvg:avg(l.filter(e=>e.r!=null).map(e=>e.r)),taux:p.length&&sv+sr>0?sv/(sv+sr):null,lastR:[...asc].reverse().find(e=>e.r!=null),gap:avg(g)}}
+function inR(a,b){return E.filter(e=>e.t>=a&&e.t<b)}
+
+function viewToday(){
+ const l=inR(day,ad(day,1)).sort((a,b)=>b.t-a.t),s=st(l);
+ const tp=s.taux==null?0:Math.round(s.taux*100);
+ const mon=ad(day,-((new Date(day).getDay()+6)%7));
+ const wk=[0,1,2,3,4,5,6].map(i=>{const d=ad(mon,i);return`<button class="wd ${d===day?'sel':''} ${inR(d,ad(d,1)).length?'has':''}" data-d="${d}">${['lun.','mar.','mer.','jeu.','ven.','sam.','dim.'][i]}<i style="border-color:${fc(inR(d,ad(d,1)).length)}">${new Date(d).getDate()}</i></button>`}).join('');
+ const rows=l.map(e=>`<div class="sw"><div class="sw-e">${ic('edit',0,20)}Modifier</div><div class="sw-d">Supprimer${ic('trash',0,20)}</div><button class="row" data-e="${e.id}"><span class="dot">${DROP(18)}</span><span class="m"><b>${hm(e.t)}</b>${bd(e)}${e.n?`<div>${esc(e.n)}</div>`:''}</span><span class="v">${e.v==null?'<small>non mesuré</small>':r0(e.v)+' <small>ml</small>'}${e.r!=null?`<div>résidu ${r0(e.r)} ml</div>`:'<div class="no">résidu non mesuré</div>'}</span></button></div>`).join('');
+ return`<div class="top"><h1>${day===sod(Date.now())?'Aujourd’hui':dd(day)}</h1><span class="navs">${day===sod(Date.now())?'':'<button class="pill td" data-today="1">'+ic('cal',0,18)+'Aujourd’hui</button>'}<button class="rb" data-nav="-1">${ic('left',0,22)}</button><button class="rb" data-nav="1">${ic('right',0,22)}</button></span></div>
+ <div class="week">${wk}</div>
+<div class='card' style='margin-top:16px'><div class='top'><span class='t'>Taux de vidange</span><span class='n' style='margin:0'>${s.taux==null?'—':tp+'<small>%</small>'}</span></div><div class='gauge'><i style='width:${tp}%;background:var(--c1)'></i><i style='width:${s.taux==null?0:100-tp}%;background:var(--c3)'></i></div><div class='leg' style='justify-content:flex-start;margin-top:10px'><span><b style='background:var(--c1)'></b>Uriné</span><span><b style='background:var(--c3)'></b>Résidu</span></div>${mchart(l)}</div>
+ <div class="grid">
+ <div class="card"><div class="t">Mictions</div><div class="n"><span class="fd" style="background:${fc(s.n)}"></span>${s.n}</div><div class="s">${r0(s.vol)} ml uriné (${s.nv} mesurées)</div></div>
+ <div class="card"><div class="t" style="color:var(--c3)">Résidu moyen</div><div class="n">${r0(s.rAvg)}<small>ml</small></div><div class="s">${s.np} mesure${s.np>1?'s':''}</div></div>
+ <div class="card"><div class="t">Dernier résidu</div><div class="n">${s.lastR?r0(s.lastR.r):'—'}<small>ml</small></div><div class="s">${s.lastR?'à '+hm(s.lastR.t):'aucune mesure'}</div></div>
+ <div class="card"><div class="t">Intervalle moyen</div><div class="n" style="font-size:26px">${dur(s.gap)}</div><div class="s">entre deux mictions</div></div></div>
+ <h2>Enregistrements</h2>${rows||'<div class="empty">Rien pour ce jour. Appuie sur + pour ajouter une miction.</div>'}`}
+
+function per(r,o){const n=new Date(),it=[];let a,b;
+ if(r==='w'){a=ad(sod(n),-((n.getDay()+6)%7)+7*o);b=ad(a,7);for(let i=0;i<7;i++)it.push([ad(a,i),ad(a,i+1),['lun','mar','mer','jeu','ven','sam','dim'][i]])}
+ else if(r==='m'){const f=new Date(n.getFullYear(),n.getMonth()+o,1);a=f.getTime();b=new Date(f.getFullYear(),f.getMonth()+1,1).getTime();const k=Math.round((b-a)/D);for(let i=0;i<k;i++)it.push([ad(a,i),ad(a,i+1),(i==0||(i+1)%5==0)?String(i+1):''])}
+ else{const y=n.getFullYear()+o;a=new Date(y,0,1).getTime();b=new Date(y+1,0,1).getTime();for(let i=0;i<12;i++)it.push([new Date(y,i,1).getTime(),new Date(y,i+1,1).getTime(),'JFMAMJJASOND'[i]])}
+ const lab=r==='w'?fd(a,{day:'numeric',month:'short'})+' – '+fd(ad(b,-1),{day:'numeric',month:'short'}):r==='m'?fd(a,{month:'long',year:'numeric'}):String(new Date(a).getFullYear());
+ return{a,b,it,lab}}
+
+function chart(P){const W=340,H=180,L=36,B=22,T=8,R=8;
+ const V=[],Q=[];P.it.forEach(([s,e])=>{const l=inR(s,e);V.push(avg(l.filter(x=>x.v!=null).map(x=>x.v)));Q.push(avg(l.filter(x=>x.r!=null).map(x=>x.r)))});
+ const mx=Math.max(100,...V.filter(x=>x!=null),...Q.filter(x=>x!=null))*1.1,n=P.it.length,rr=n>12?2.5:3.8;
+ const x=i=>L+(n==1?0:i*(W-L-R)/(n-1)),y=v=>T+(H-T-B)*(1-v/mx);
+ const ln=(A,c)=>{let d='',pen=false,dots='';A.forEach((v,i)=>{if(v==null){pen=false;return}d+=(pen?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1);pen=true;dots+=`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${rr}" fill="${c}"/>`});return`<path d="${d}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round"/>`+dots};
+ let g='';for(let k=0;k<=3;k++){const v=mx*k/3;g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--track)" stroke-dasharray="3 4"/><text x="${L-6}" y="${y(v)+3}" text-anchor="end">${Math.round(v)}</text>`}
+ const xl=P.it.map((q,i)=>q[2]?`<text x="${x(i)}" y="${H-6}" text-anchor="middle">${q[2]}</text>`:'').join('');
+ return`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Volume uriné et résidu dans le temps">${g}${xl}${ln(V,'var(--c1)')}${ln(Q,'var(--c3)')}</svg>`}
+
+function viewTrends(){
+ const P=per(rg,off),Pp=per(rg,off-1),s=st(inR(P.a,P.b)),sp=st(inR(Pp.a,Pp.b));
+ let dl='<div class="s">pas de période précédente</div>';
+ if(s.rAvg!=null&&sp.rAvg!=null){const d=s.rAvg-sp.rAvg;dl=`<div class="s ${d>0?'up':d<0?'dn':''}">${d>0?'+':''}${Math.round(d)} ml vs période préc.</div>`}
+ const sg=[['w','Semaine'],['m','Mois'],['y','An']].map(([k,t])=>`<button data-r="${k}" class="${rg===k?'on':''}">${t}</button>`).join('');
+ return`<div class="top"><h1>Tendances</h1></div><div class="seg">${sg}</div>
+ <div class="nav"><button data-po="-1">${ic('left',0,20)}</button>${P.lab}<button data-po="1">${ic('right',0,20)}</button></div>
+ <div class="card"><div class="leg" style="justify-content:flex-start;margin-bottom:8px"><span><b style="background:var(--c1)"></b>Volume uriné moyen</span><span><b style="background:var(--c3)"></b>Résidu moyen</span></div>${chart(P)}
+ <div class="s" style="color:var(--mute);font-size:12px;font-weight:600">Les jours sans mesure à la sonde restent vides : ils ne comptent pas comme zéro.</div></div>
+ <div class="grid">
+ <div class="card"><div class="t" style="color:var(--amber)">Résidu moyen</div><div class="n">${r0(s.rAvg)}<small>ml</small></div>${dl}</div>
+ <div class="card"><div class="t" style="color:var(--c1)">Volume par miction</div><div class="n">${r0(s.vAvg)}<small>ml</small></div><div class="s">${s.n} miction${s.n>1?'s':''}</div></div>
+ <div class="card"><div class="t">Taux de vidange</div><div class="n">${s.taux==null?'—':Math.round(s.taux*100)+'<small>%</small>'}</div><div class="s">${sp.taux==null?'':'avant : '+Math.round(sp.taux*100)+' %'}</div></div>
+ <div class="card"><div class="t">Mesures sonde</div><div class="n">${s.np}</div><div class="s">sur ${s.n} miction${s.n>1?'s':''}</div></div></div>${extra(P,s)}`}
+
+function viewInfo(){return`<div class="top"><h1>Infos</h1></div>
+ <div class="warn" style="margin-top:14px">Ces fiches sont des repères généraux. Les couleurs de fréquence (1 à 5 vert, 6 à 10 jaune, plus de 10 orange) et le repère de 50 ml sont des aides d’affichage, pas des diagnostics. Elles ne remplacent pas l’avis de ton médecin ou de ton urologue.</div><h2>Comprendre</h2>
+ <details><summary>Qu’est-ce que le résidu post-mictionnel ?</summary><p>C’est le volume d’urine qui reste dans la vessie juste après avoir uriné. Quand la vessie ne se vide pas complètement, on parle de rétention incomplète. On le mesure par un sondage juste après la miction ou par une échographie.</p><p class="src">Sources : MSD Manuals, « Rétention urinaire » (révision mars 2026).</p></details>
+ <details><summary>Quelles valeurs repères ?</summary><p>Une rétention incomplète est retenue au-delà de 50 ml, et au-delà de 100 ml chez les plus de 65 ans. Des textes d’urologie français jugent un résidu significatif au-delà de 100 à 150 ml, et non significatif sous 20 ml. Les seuils varient selon les sources : seul ton médecin peut interpréter tes chiffres.</p><p class="src">Sources : MSD Manuals ; Progrès en Urologie 2003 (urofrance.org, site de l’Association française d’urologie).</p></details>
+ <details><summary>Pourquoi mesurer plusieurs fois ?</summary><p>Le résidu varie beaucoup d’une miction à l’autre, surtout quand il est important. Une valeur isolée peut être trompeuse, par exemple après avoir beaucoup bu. Un résidu qui revient régulièrement a plus de sens : c’est ce que montre la courbe de tendance.</p><p class="src">Sources : Progrès en Urologie 2003 ; G. Amarenco, « Les résidus post-mictionnels » (2010).</p></details>
+ <details><summary>Quand consulter ?</summary><p>Ne pas pouvoir uriner du tout alors que la vessie est pleine est une urgence : appelle le 15 ou le 112. Une rétention qui dure peut aussi causer des envies fréquentes, des fuites, des infections urinaires à répétition ou des douleurs au bas du ventre. Parle-en à ton médecin si ton résidu reste élevé.</p><p class="src">Sources : Revue Médicale Suisse (2016) ; MSD Manuals ; G. Amarenco (2010).</p></details>
+ <details><summary>Qu’est-ce que le taux de vidange ?</summary><p>C’est un indicateur de l’app, pas une mesure médicale : volume uriné ÷ (volume uriné + résidu). Il utilise seulement les mictions où le résidu a été mesuré. Plus il est proche de 100 %, mieux la vessie se vide.</p></details>
+<h2>Mes données</h2>
+ <div class="card"><div class="s" style="margin:0 0 10px">Tes données sont enregistrées sur ton compte Claude et recopiées dans ce navigateur : tu les retrouves sur tes autres appareils. Exporte-les de temps en temps pour garder ta propre copie.</div>
+ <div class="btns"><div class="dd"><button class="pill pri" data-x="exp">Export ▾</button><div class="menu"><button data-x="ej">JSON</button><button data-x="ec">CSV</button><button data-x="ep">PDF</button></div></div><button class="pill" data-x="file">Import</button><input type="file" id="fi" accept=".csv,.json,text/csv,application/json" hidden></div>
+ <div class="err" id="ioerr">${flash}</div></div>
+ <h2>Suppression des données</h2>
+ <div class="card"><div class="s" style="margin:0 0 10px">Où sont tes données : sur ton compte Claude (copie principale, partagée entre tes appareils) et dans la mémoire de ce navigateur (copie locale).<br><br>« Tout effacer » supprime les deux, donc aussi sur tes autres appareils. Il n’y a aucun moyen d’annuler : exporte tes données avant si tu veux les garder.</div>
+ <div class="btns"><button class="pill dng" data-x="clr">Tout effacer</button></div></div>`}
+
+function render(){
+ $('#app').innerHTML=tab==='t'?viewToday():tab==='r'?viewTrends():viewInfo();
+ $('#fab').style.display=tab==='i'?'none':'';
+ $('#bar').innerHTML=[['t','drop','Aujourd’hui'],['r','chart','Tendances'],['i','book','Infos']].map(([k,i,t])=>`<button data-tab="${k}" class="${tab===k?'on':''}"><span>${ic(i,tab===k,24)}</span>${t}</button>`).join('')}
+
+function sheet(id){
+ const e=id?E.find(x=>x.id===id):null;let t=e?e.t:Date.now();
+ if(!e&&day!==sod(Date.now())){const d=new Date(day);d.setHours(12,0,0,0);t=d.getTime()}
+ const loc=new Date(t-new Date(t).getTimezoneOffset()*6e4).toISOString().slice(0,16);
+ const ch=(a,f)=>a.map(v=>`<button class="pill" data-f="${f}" data-v="${v}">${v}</button>`).join('');
+ const o=document.createElement('div');o.className='ov';
+ o.innerHTML=`<div class="sh" role="dialog" aria-label="Miction"><div class="sb"><h3>${e?'Modifier la miction':'Nouvelle miction'}</h3>
+ <label>Heure<input type="datetime-local" id="ft" value="${loc}"></label>
+ <label style="color:var(--c1)">Volume uriné (ml), facultatif<input id="fv" type="number" inputmode="numeric" min="1" value="${e&&e.v!=null?e.v:''}" placeholder="vide si non mesuré"></label><div class="chips">${ch([100,150,200,250,300,400],'fv')}</div>
+ <label style="color:var(--amber)">Résidu à la sonde (ml), facultatif<input id="fr" type="number" inputmode="numeric" min="0" value="${e&&e.r!=null?e.r:''}" placeholder="laisser vide si non mesuré"></label><div class="chips">${ch([0,25,50,100,150,200],'fr')}</div>
+ <div class='chips' style='margin-top:14px'><label class='pill' style='display:inline-flex;align-items:center;margin:0'><input type='checkbox' id='ck1' ${e&&e.iu?'checked':''} style='width:auto;margin:0 6px 0 0'>Infection urinaire</label><label class='pill' style='display:inline-flex;align-items:center;margin:0'><input type='checkbox' id='ck2' ${e&&e.dl?'checked':''} style='width:auto;margin:0 6px 0 0'>Douleur</label><label class='pill' style='display:inline-flex;align-items:center;margin:0'><input type='checkbox' id='ck3' ${e&&e.br?'checked':''} style='width:auto;margin:0 6px 0 0'>Brûlure</label></div>
+ <label>Note<input id="fn" type="text" maxlength="80" value="${e?esc(e.n||''):''}" placeholder="urgence, fuite, contexte…"></label>
+ ${e?'<div class="btns"><button class="pill dng" id="fd">Supprimer</button></div>':''}</div><div class="sf"><div class="err" id="fe"></div><div class="sfb"><button class="pill" id="fc">Annuler</button><button class="pill pri" id="fs">Enregistrer</button></div></div></div>`;
+ document.body.appendChild(o);const q=s=>o.querySelector(s),vv=window.visualViewport,fit=()=>{if(!vv)return;o.style.top=vv.offsetTop+'px';o.style.height=(vv.height-(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--vb'))||0))+'px';o.style.bottom='auto'},close=()=>{if(vv){vv.removeEventListener('resize',fit);vv.removeEventListener('scroll',fit)}o.remove()};if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);fit()}
+ o.addEventListener('click',ev=>{const b=ev.target.closest('[data-f]');if(b)q('#'+b.dataset.f).value=b.dataset.v;if(ev.target===o)close()});
+ q('#fc').onclick=close;
+ if(e)q('#fd').onclick=function(){if(this.dataset.s){E=E.filter(x=>x.id!==e.id);save();close();render()}else{this.dataset.s=1;this.textContent='Confirmer la suppression'}};
+ q('#fs').onclick=()=>{const vs=q('#fv').value.trim(),v=vs===''?null:parseFloat(vs),rs=q('#fr').value.trim(),r=rs===''?null:parseFloat(rs),tt=new Date(q('#ft').value).getTime();
+  if(v!=null&&!(v>=0)){q('#fe').textContent='Le volume doit être 0 ml ou plus, ou laissé vide.';return}
+  if(r!=null&&!(r>=0)){q('#fe').textContent='Le résidu doit être 0 ml ou plus.';return}
+  if(isNaN(tt)){q('#fe').textContent='Indique une date et une heure valides.';return}
+  const rec={id:e?e.id:Date.now()+Math.random().toString(36).slice(2,6),t:tt,v:v==null?null:Math.round(v),r:r==null?null:Math.round(r),n:q('#fn').value.trim(),iu:q('#ck1').checked?1:0,dl:q('#ck2').checked?1:0,br:q('#ck3').checked?1:0};
+  E=e?E.map(x=>x.id===e.id?rec:x):[...E,rec];save();day=sod(tt);tab='t';close();render()};
+ q('#fv').focus()}
+
+document.addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.closest('.ov'))return;const d=b.dataset;
+ if(d.tab){tab=d.tab;flash='';render()}
+ else if(d.d){day=+d.d;render()}
+ else if(d.nav){day=ad(day,+d.nav);render()}
+ else if(d.today){day=sod(Date.now());render()}
+ else if(d.e)sheet(d.e)
+ else if(d.r){rg=d.r;off=0;render()}
+ else if(d.po){off+=+d.po;render()}
+else if(d.x){const er=$('#ioerr'),mn=$('.menu');er.textContent='';
+  if(d.x==='exp'){mn.classList.toggle('on');return}
+  mn&&mn.classList.remove('on');
+  if(d.x==='ej')dlModal('json');else if(d.x==='ec')dlModal('csv');else if(d.x==='ep')pdfModal();
+  else if(d.x==='file')$('#fi').click();
+  else if(d.x==='clr'){if(d.s){E=[];save();render();flash='Données effacées.';$('#ioerr').textContent=flash}else{d.s=1;b.dataset.s=1;b.textContent='Confirmer l’effacement'}}}});
+$('#fab').onclick=()=>sheet();$('#fab').innerHTML=ic('plus',0,34,null,2.6);
+let sx=0,sy=0,sdx=0,srow=null,slock=null,sjust=false,ut=null;
+function delE(id){const e=E.find(x=>x.id===id);if(!e)return;E=E.filter(x=>x.id!==id);save();render();
+ let t=$('#toast');if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t)}
+ t.innerHTML='Miction supprimée <button id="undo">Annuler</button>';t.style.display='flex';clearTimeout(ut);
+ $('#undo').onclick=()=>{E=[...E,e];save();t.style.display='none';render()};ut=setTimeout(()=>{t.style.display='none'},5000)}
+document.addEventListener('pointerdown',ev=>{const r=ev.target.closest('.row');if(!r)return;srow=r;sx=ev.clientX;sy=ev.clientY;sdx=0;slock=null;r.style.transition='none'});
+document.addEventListener('pointermove',ev=>{if(!srow)return;const dx=ev.clientX-sx,dy=ev.clientY-sy;
+ if(slock===null&&(Math.abs(dx)>8||Math.abs(dy)>8))slock=Math.abs(dx)>Math.abs(dy)*1.2?'x':'y';
+ if(slock!=='x')return;sdx=dx;srow.style.transform='translateX('+dx+'px)';srow.parentNode.dataset.dir=dx>0?'r':'l'});
+function endSwipe(cancel){if(!srow)return;const r=srow,w=r.parentNode,id=r.dataset.e;srow=null;if(slock!=='x')return;
+ sjust=true;setTimeout(()=>{sjust=false},350);r.style.transition='transform .2s ease';
+ if(!cancel&&sdx>90){r.style.transform='';setTimeout(()=>{w.dataset.dir=''},200);sheet(id)}
+ else if(!cancel&&sdx<-110){r.style.transform='translateX(-110%)';setTimeout(()=>delE(id),190)}
+ else{r.style.transform='';setTimeout(()=>{w.dataset.dir=''},200)}}
+document.addEventListener('pointerup',()=>endSwipe(false));
+document.addEventListener('pointercancel',()=>endSwipe(true));
+document.addEventListener('click',ev=>{if(sjust){ev.stopPropagation();ev.preventDefault()}},true);
+render();
+(async()=>{try{const cl=await claude.use('db'),us=await claude.use('user');if(!cl||!us)return;UID=await us.id();DB=cl;
+ const snap=await Promise.race([DB.collection('data/users/'+UID).get(),new Promise((_,j)=>setTimeout(j,10000))]);
+ if(snap.empty){syncOk=true;if(E.length)push();return}
+ let a=[];snap.docs.forEach(d=>{const s=d.data().list;a=a.concat(JSON.parse(s));lastM[d.id]=s});
+ E=a;try{localStorage.setItem('sv1',JSON.stringify(E))}catch(e){}syncOk=true;render()}catch(e){}})();
+(function(){try{const root=document.documentElement,p=document.createElement('div');
+p.style.cssText='position:fixed;left:0;top:0;width:2px;height:100%;opacity:0;pointer-events:none';document.body.appendChild(p);
+const io=new IntersectionObserver(es=>{const e=es[es.length-1];if(!e||e.intersectionRatio<.3)return;const h=window.innerHeight,r=e.intersectionRect,off=Math.round(h-(r.top+r.height));
+root.style.setProperty('--vb',(off>4&&off<320?off:0)+'px')},{threshold:Array.from({length:101},(_,i)=>i/100)});io.observe(p)}catch(e){}})();
+</script>
+</body>
+</html>
