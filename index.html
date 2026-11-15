@@ -144,10 +144,15 @@ function fromCsv(t){const R=csv(t.replace(/^\uFEFF/,'')),h=R[0].map(x=>x.trim().
 function doCsv(t){const io=$('#io'),er=$('#ioerr');try{const a=fromCsv(t);if(!a.length)throw 0;if(E.length)io.value=JSON.stringify(E);E=a;save();er.textContent=a.length+' mictions importées. Ton ancienne sauvegarde est dans la zone de texte.'}catch(x){er.textContent='Fichier illisible. Colonnes attendues : Date, Heure, Quantité, Sonde, IU, Douleur, Brûlure, Notes.'}}
 function modal(h){const o=document.createElement('div');o.className='ov';o.innerHTML='<div class="sh" role="dialog"><div class="sb" style="padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))">'+h+'</div></div>';o.addEventListener('click',e=>{if(e.target===o)o.remove()});document.body.appendChild(o);return o}
 function exCsv(){return '\uFEFFdate;heure;volume_ml;residu_ml;note;iu;douleur;brulure\n'+[...E].sort((a,b)=>a.t-b.t).map(e=>[fd(e.t,{year:'numeric',month:'2-digit',day:'2-digit'}),hm(e.t),e.v==null?'':e.v,e.r==null?'':e.r,'"'+(e.n||'').replace(/"/g,'""')+'"',e.iu||'',e.dl||'',e.br||''].join(';')).join('\n')}
+async function saveFile(fn,data,mime){
+ if(typeof claude!=='undefined'&&claude&&claude.use){try{const d=await claude.use('downloads');if(d){await d.save({filename:fn,data});return}}catch(e){if(e&&e.code==='declined')throw e}}
+ const blob=new Blob([data],{type:mime}),file=new File([blob],fn,{type:mime});
+ if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return}catch(e){if(e&&e.name==='AbortError')throw{code:'declined'}}}
+ const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}
 function dlModal(k){const txt=k==='json'?JSON.stringify(E):exCsv(),fn='suivi-vessie-'+new Date().toISOString().slice(0,10)+'.'+k;
  const o=modal(`<h3>Export ${k.toUpperCase()}</h3><div class="s">${E.length} mictions · ${fn}</div><div class="btns"><button class="pill pri" id="m1">Télécharger</button><button class="pill" id="m2">Copier</button><button class="pill" id="m3">Fermer</button></div><div class="err" id="me"></div>`),me=o.querySelector('#me');
  o.querySelector('#m3').onclick=()=>o.remove();
- o.querySelector('#m1').onclick=async()=>{try{const d=await claude.use('downloads');if(!d)throw 0;await d.save({filename:fn,data:txt});o.remove()}catch(e){me.textContent=e&&e.code==='declined'?'Téléchargement annulé.':'Téléchargement impossible ici : utilise « Copier ».'}};
+ o.querySelector('#m1').onclick=async()=>{try{await saveFile(fn,txt,k==='json'?'application/json':'text/csv');o.remove()}catch(e){me.textContent=e&&e.code==='declined'?'Téléchargement annulé.':'Téléchargement impossible ici : utilise « Copier ».'}};
  o.querySelector('#m2').onclick=async()=>{try{await navigator.clipboard.writeText(txt);me.style.color='var(--ink)';me.textContent='Copié dans le presse-papiers.'}catch(e){me.textContent='Copie impossible.'}}}
 function parseImp(t){t=t.replace(/^\uFEFF/,'').trim();if(t[0]==='['){const a=JSON.parse(t);if(!Array.isArray(a)||a.some(x=>!(x.t>0)))throw 0;return a.map(x=>({id:x.id||Date.now()+Math.random().toString(36).slice(2,6),t:+x.t,v:x.v==null?null:+x.v,r:x.r==null?null:+x.r,n:x.n||'',iu:x.iu||0,dl:x.dl||0,br:x.br||0}))}const a=fromCsv(t);if(!a.length)throw 0;return a}
 function impText(t){let a;try{a=parseImp(t)}catch(e){const er=$('#ioerr');if(er)er.textContent='Fichier illisible : utilise un export JSON de l’app, ou un CSV avec les colonnes Date, Heure, Quantité, Sonde, Notes.';return}
@@ -176,8 +181,8 @@ function pdfModal(){
   try{const[a,b]=pdfRange(PER,q('#d1').value,q('#d2').value);if(!(b>a))throw 'range';
    if(!E.some(e=>e.t>=a&&e.t<=b)){me.textContent='Aucune miction sur cette période.';return}
    me.style.color='var(--mute)';me.textContent='Création du PDF…';
-   const buf=mkPdf(a,b,q('#k1').checked,q('#k2').checked),d=await claude.use('downloads');if(!d)throw 'dl';
-   await d.save({filename:'suivi-vessie-'+iso(a)+'_'+iso(b)+'.pdf',data:buf});o.remove()}
+   const buf=mkPdf(a,b,q('#k1').checked,q('#k2').checked);
+   await saveFile('suivi-vessie-'+iso(a)+'_'+iso(b)+'.pdf',buf,'application/pdf');o.remove()}
   catch(e){me.style.color='';me.textContent=e==='range'?'Période invalide.':e==='lib'?'Générateur de PDF indisponible : vérifie ta connexion.':e&&e.code==='declined'?'Téléchargement annulé.':'Création ou téléchargement impossible.'}}}
 function mkPdf(a,b,gr,dt){
  const J=window.jspdf;if(!J)throw 'lib';
@@ -329,11 +334,11 @@ function viewInfo(){return`<div class="top"><h1>Infos</h1></div>
  <details><summary>Quand consulter ?</summary><p>Ne pas pouvoir uriner du tout alors que la vessie est pleine est une urgence : appelle le 15 ou le 112. Une rétention qui dure peut aussi causer des envies fréquentes, des fuites, des infections urinaires à répétition ou des douleurs au bas du ventre. Parle-en à ton médecin si ton résidu reste élevé.</p><p class="src">Sources : Revue Médicale Suisse (2016) ; MSD Manuals ; G. Amarenco (2010).</p></details>
  <details><summary>Qu’est-ce que le taux de vidange ?</summary><p>C’est un indicateur de l’app, pas une mesure médicale : volume uriné ÷ (volume uriné + résidu). Il utilise seulement les mictions où le résidu a été mesuré. Plus il est proche de 100 %, mieux la vessie se vide.</p></details>
 <h2>Mes données</h2>
- <div class="card"><div class="s" style="margin:0 0 10px">Tes données sont enregistrées sur ton compte Claude et recopiées dans ce navigateur : tu les retrouves sur tes autres appareils. Exporte-les de temps en temps pour garder ta propre copie.</div>
+ <div class="card"><div class="s" style="margin:0 0 10px">Tes données sont enregistrées dans la mémoire de ce navigateur, sur cet appareil uniquement. Exporte-les régulièrement pour garder ta propre copie.</div>
  <div class="btns"><div class="dd"><button class="pill pri" data-x="exp">Export ▾</button><div class="menu"><button data-x="ej">JSON</button><button data-x="ec">CSV</button><button data-x="ep">PDF</button></div></div><button class="pill" data-x="file">Import</button><input type="file" id="fi" accept=".csv,.json,text/csv,application/json" hidden></div>
  <div class="err" id="ioerr">${flash}</div></div>
  <h2>Suppression des données</h2>
- <div class="card"><div class="s" style="margin:0 0 10px">Où sont tes données : sur ton compte Claude (copie principale, partagée entre tes appareils) et dans la mémoire de ce navigateur (copie locale).<br><br>« Tout effacer » supprime les deux, donc aussi sur tes autres appareils. Il n’y a aucun moyen d’annuler : exporte tes données avant si tu veux les garder.</div>
+ <div class="card"><div class="s" style="margin:0 0 10px">Où sont tes données : uniquement dans la mémoire de ce navigateur, sur cet appareil.<br><br>« Tout effacer » les supprime définitivement. Il n’y a aucun moyen d’annuler : exporte tes données avant si tu veux les garder.</div>
  <div class="btns"><button class="pill dng" data-x="clr">Tout effacer</button></div></div>`}
 
 function render(){
