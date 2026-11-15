@@ -145,15 +145,18 @@ function doCsv(t){const io=$('#io'),er=$('#ioerr');try{const a=fromCsv(t);if(!a.
 function modal(h){const o=document.createElement('div');o.className='ov';o.innerHTML='<div class="sh" role="dialog"><div class="sb" style="padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))">'+h+'</div></div>';o.addEventListener('click',e=>{if(e.target===o)o.remove()});document.body.appendChild(o);return o}
 function exCsv(){return '\uFEFFdate;heure;volume_ml;residu_ml;note;iu;douleur;brulure\n'+[...E].sort((a,b)=>a.t-b.t).map(e=>[fd(e.t,{year:'numeric',month:'2-digit',day:'2-digit'}),hm(e.t),e.v==null?'':e.v,e.r==null?'':e.r,'"'+(e.n||'').replace(/"/g,'""')+'"',e.iu||'',e.dl||'',e.br||''].join(';')).join('\n')}
 async function saveFile(fn,data,mime){
- if(typeof claude!=='undefined'&&claude&&claude.use){try{const d=await claude.use('downloads');if(d){await d.save({filename:fn,data});return}}catch(e){if(e&&e.code==='declined')throw e}}
- const blob=new Blob([data],{type:mime}),file=new File([blob],fn,{type:mime});
- if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return}catch(e){if(e&&e.name==='AbortError')throw{code:'declined'}}}
- const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}
-function dlModal(k){const txt=k==='json'?JSON.stringify(E):exCsv(),fn='suivi-vessie-'+new Date().toISOString().slice(0,10)+'.'+k;
- const o=modal(`<h3>Export ${k.toUpperCase()}</h3><div class="s">${E.length} mictions · ${fn}</div><div class="btns"><button class="pill pri" id="m1">Télécharger</button><button class="pill" id="m2">Copier</button><button class="pill" id="m3">Fermer</button></div><div class="err" id="me"></div>`),me=o.querySelector('#me');
+ if(typeof claude!=='undefined'&&claude&&claude.use){try{const d=await claude.use('downloads');if(d){await d.save({filename:fn,data});return'ok'}}catch(e){if(e&&e.code==='declined')return'cancel'}}
+ if(navigator.share){
+  for(const m of(mime==='application/pdf'?[mime]:[mime,'text/plain'])){try{const f=new File([data],fn,{type:m});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return'ok'}}catch(e){if(e&&e.name==='AbortError')return'cancel'}}
+  if(typeof data==='string'){try{await navigator.share({title:fn,text:data});return'ok'}catch(e){if(e&&e.name==='AbortError')return'cancel'}}
+ }
+ const u=URL.createObjectURL(new Blob([data],{type:mime})),l=document.createElement('a');l.href=u;l.download=fn;l.target='_blank';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);return'link'}
+function dlModal(k){const txt=k==='json'?JSON.stringify(E):exCsv(),fn='suivi-vessie-'+new Date().toISOString().slice(0,10)+'.'+k,mime=k==='json'?'application/json':'text/csv';
+ const o=modal(`<h3>Export ${k.toUpperCase()}</h3><div class="s">${E.length} mictions · ${fn}</div><div class="btns"><button class="pill pri" id="m1">Enregistrer</button><button class="pill" id="m2">Copier</button><button class="pill" id="m3">Fermer</button></div><div class="err" id="me"></div><details style="margin-top:12px"><summary class="s">Afficher le texte brut</summary><textarea id="mt" readonly style="height:140px;margin-top:8px"></textarea></details>`),me=o.querySelector('#me'),ta=o.querySelector('#mt');
+ ta.value=txt;
  o.querySelector('#m3').onclick=()=>o.remove();
- o.querySelector('#m1').onclick=async()=>{try{await saveFile(fn,txt,k==='json'?'application/json':'text/csv');o.remove()}catch(e){me.textContent=e&&e.code==='declined'?'Téléchargement annulé.':'Téléchargement impossible ici : utilise « Copier ».'}};
- o.querySelector('#m2').onclick=async()=>{try{await navigator.clipboard.writeText(txt);me.style.color='var(--ink)';me.textContent='Copié dans le presse-papiers.'}catch(e){me.textContent='Copie impossible.'}}}
+ o.querySelector('#m1').onclick=async()=>{me.style.color='';me.textContent='';try{const r=await saveFile(fn,txt,mime);if(r==='cancel')return;if(r==='link'){me.style.color='var(--ink)';me.textContent='Téléchargement lancé. Si rien ne se passe, utilise « Copier » ou le texte brut.';return}o.remove()}catch(e){me.textContent='Enregistrement impossible'+(e&&e.name?' ('+e.name+')':'')+'. Utilise « Copier » ou le texte brut.'}};
+ o.querySelector('#m2').onclick=async()=>{me.style.color='';me.textContent='';try{await navigator.clipboard.writeText(txt);me.style.color='var(--ink)';me.textContent='Copié dans le presse-papiers.'}catch(e){o.querySelector('details').open=true;ta.focus();ta.setSelectionRange(0,ta.value.length);let ok=false;try{ok=document.execCommand('copy')}catch(x){}me.style.color=ok?'var(--ink)':'';me.textContent=ok?'Copié dans le presse-papiers.':'Texte sélectionné : touche-le, puis « Copier ».'}}}
 function parseImp(t){t=t.replace(/^\uFEFF/,'').trim();if(t[0]==='['){const a=JSON.parse(t);if(!Array.isArray(a)||a.some(x=>!(x.t>0)))throw 0;return a.map(x=>({id:x.id||Date.now()+Math.random().toString(36).slice(2,6),t:+x.t,v:x.v==null?null:+x.v,r:x.r==null?null:+x.r,n:x.n||'',iu:x.iu||0,dl:x.dl||0,br:x.br||0}))}const a=fromCsv(t);if(!a.length)throw 0;return a}
 function impText(t){let a;try{a=parseImp(t)}catch(e){const er=$('#ioerr');if(er)er.textContent='Fichier illisible : utilise un export JSON de l’app, ou un CSV avec les colonnes Date, Heure, Quantité, Sonde, Notes.';return}
  const ok=()=>{E=a;save();flash=a.length+' mictions importées.';render()};
@@ -182,7 +185,7 @@ function pdfModal(){
    if(!E.some(e=>e.t>=a&&e.t<=b)){me.textContent='Aucune miction sur cette période.';return}
    me.style.color='var(--mute)';me.textContent='Création du PDF…';
    const buf=mkPdf(a,b,q('#k1').checked,q('#k2').checked);
-   await saveFile('suivi-vessie-'+iso(a)+'_'+iso(b)+'.pdf',buf,'application/pdf');o.remove()}
+   const r=await saveFile('suivi-vessie-'+iso(a)+'_'+iso(b)+'.pdf',buf,'application/pdf');if(r==='cancel'){me.style.color='';me.textContent='';return}if(r==='link'){me.style.color='var(--ink)';me.textContent='Téléchargement lancé. Si rien ne se passe, utilise l’export CSV ou JSON.';return}o.remove()}
   catch(e){me.style.color='';me.textContent=e==='range'?'Période invalide.':e==='lib'?'Générateur de PDF indisponible : vérifie ta connexion.':e&&e.code==='declined'?'Téléchargement annulé.':'Création ou téléchargement impossible.'}}}
 function mkPdf(a,b,gr,dt){
  const J=window.jspdf;if(!J)throw 'lib';
