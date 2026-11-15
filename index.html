@@ -269,7 +269,7 @@ function extra(P,s){const ls=inR(P.a,P.b).sort((x,y)=>x.t-y.t);if(!ls.length)ret
  return`<h2>Fréquence</h2><div class='card'><svg viewBox='0 0 ${W} ${H}' width='100%' role='img' aria-label='Mictions par jour'>${fb}</svg><div class='s'>Moyenne : ${(ls.length/ds()).toFixed(1).replace('.',',')} par jour avec saisie. Vert : 1 à 5, jaune : 6 à 10, orange : plus de 10.</div></div><h2>Heures de la journée</h2><div class='card'><svg viewBox='0 0 ${W} 100' width='100%' role='img' aria-label='Mictions par heure'>${hb}</svg><div class='leg' style='justify-content:flex-start;margin-top:6px'><span><b style='background:var(--blue)'></b>Heure de pointe : ${p2(pk)} h (${h[pk]} mictions)</span></div><div class='grid' style='margin-top:10px'>${pt}</div></div><div class='grid'>${cd('Intervalle moyen',dur(avg(g)),'entre mictions')}${cd('Plus court',dur(g.length?Math.min(...g):null),'intervalle')}${cd('Plus long',dur(g.length?Math.max(...g):null),'intervalle')}${cd('Résidu au-delà de 50 ml',ov,'des mesures sonde')}${cd('Infection urinaire',ls.filter(e=>e.iu).length,'mictions marquées')}${cd('Douleur / brûlure',ls.filter(e=>e.dl).length+' / '+ls.filter(e=>e.br).length,'mictions marquées')}</div>`}
 function st(l){const p=l.filter(e=>e.r!=null&&e.v!=null),sv=p.reduce((a,e)=>a+e.v,0),sr=p.reduce((a,e)=>a+e.r,0);
  const asc=[...l].sort((a,b)=>a.t-b.t),g=[];for(let i=1;i<asc.length;i++)g.push((asc[i].t-asc[i-1].t)/6e4);
- return{n:l.length,np:l.filter(e=>e.r!=null).length,nv:l.filter(e=>e.v!=null).length,vol:l.reduce((a,e)=>a+(e.v||0),0),vAvg:avg(l.filter(e=>e.v!=null).map(e=>e.v)),rAvg:avg(l.filter(e=>e.r!=null).map(e=>e.r)),taux:p.length&&sv+sr>0?sv/(sv+sr):null,lastR:[...asc].reverse().find(e=>e.r!=null),gap:avg(g)}}
+ return{n:l.length,np:l.filter(e=>e.r!=null).length,nv:l.filter(e=>e.v!=null).length,vol:l.reduce((a,e)=>a+(e.v||0),0),vAvg:avg(l.filter(e=>e.v!=null).map(e=>e.v)),rAvg:avg(l.filter(e=>e.r!=null).map(e=>e.r)),taux:p.length&&sv+sr>0?sv/(sv+sr):null,lastR:[...asc].reverse().find(e=>e.r!=null),rMax:l.filter(e=>e.r!=null).sort((a,b)=>b.r-a.r)[0],cap:avg(p.map(e=>e.v+e.r)),nc:p.length,gap:avg(g)}}
 function inR(a,b){return E.filter(e=>e.t>=a&&e.t<b)}
 
 function viewToday(){
@@ -283,9 +283,11 @@ function viewToday(){
 <div class='card' style='margin-top:16px'><div class='top'><span class='t'>Taux de vidange</span><span class='n' style='margin:0'>${s.taux==null?'—':tp+'<small>%</small>'}</span></div><div class='gauge'><i style='width:${tp}%;background:var(--c1)'></i><i style='width:${s.taux==null?0:100-tp}%;background:var(--c3)'></i></div><div class='leg' style='justify-content:flex-start;margin-top:10px'><span><b style='background:var(--c1)'></b>Uriné</span><span><b style='background:var(--c3)'></b>Résidu</span></div>${mchart(l)}</div>
  <div class="grid">
  <div class="card"><div class="t">Mictions</div><div class="n"><span class="fd" style="background:${fc(s.n)}"></span>${s.n}</div><div class="s">${r0(s.vol)} ml uriné (${s.nv} mesurées)</div></div>
+ <div class="card"><div class="t">Intervalle moyen</div><div class="n" style="font-size:26px">${dur(s.gap)}</div><div class="s">entre deux mictions</div></div>
+ <div class="card"><div class="t" style="color:var(--c1)">Uriné moyen</div><div class="n">${r0(s.vAvg)}<small>ml</small></div><div class="s">${s.nv} mesure${s.nv>1?'s':''}</div></div>
  <div class="card"><div class="t" style="color:var(--c3)">Résidu moyen</div><div class="n">${r0(s.rAvg)}<small>ml</small></div><div class="s">${s.np} mesure${s.np>1?'s':''}</div></div>
- <div class="card"><div class="t">Dernier résidu</div><div class="n">${s.lastR?r0(s.lastR.r):'—'}<small>ml</small></div><div class="s">${s.lastR?'à '+hm(s.lastR.t):'aucune mesure'}</div></div>
- <div class="card"><div class="t">Intervalle moyen</div><div class="n" style="font-size:26px">${dur(s.gap)}</div><div class="s">entre deux mictions</div></div></div>
+ <div class="card"><div class="t">Capacité vésicale</div><div class="n">${r0(s.cap)}<small>ml</small></div><div class="s">uriné + résidu, moyenne</div></div>
+ <div class="card"><div class="t" style="color:var(--c3)">Résidu maximum</div><div class="n">${s.rMax?r0(s.rMax.r):'—'}<small>ml</small></div><div class="s">${s.rMax?'à '+hm(s.rMax.t):'aucune mesure'}</div></div></div>
  <h2>Enregistrements</h2>${rows||'<div class="empty">Rien pour ce jour. Appuie sur + pour ajouter une miction.</div>'}`}
 
 function per(r,o){const n=new Date(),it=[];let a,b;
